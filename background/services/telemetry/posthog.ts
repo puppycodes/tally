@@ -1,14 +1,13 @@
-/* eslint-disable */
-
 /* just some quick thoughts on pushing to posthog on a
  per event basis instead of including a lib...
  nothing to store and allows us to keep things pretty simple.
  */
 
- interface HogEventProp {
+interface HogEventProp {
   distinct_id: string
   data: string
 }
+
 export interface HogEvent {
   api_key: string
   event: string
@@ -17,18 +16,18 @@ export interface HogEvent {
   }
 }
 
-type GetHogResponse = {
-  data: HogEvent[]
+type HogResponse = {
+  data: string
 }
 
-async function createEvent() {
+export async function createEvent(): Promise<HogResponse> {
   try {
     const response = await fetch("https://app.posthog.com/capture/", {
       method: "POST",
       body: JSON.stringify({
         // this is a safe public write only api key
-        // roll this key for demo 
-        api_key: "phc_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        // roll this key for demo
+        api_key: "phc_VzveyNxrn2xyiKDYn7XjrgaqELGeUilDZGiBVh6jNmh",
         event: "Wallet Opened",
         properties: {
           distinct_id: "0000001",
@@ -44,21 +43,15 @@ async function createEvent() {
     if (!response.ok) {
       throw new Error(`Error! status: ${response.status}`)
     }
-
-    const result = (await response.json()) as GetHogResponse
-
+    const result = (await response.json()) as HogResponse
     // eslint-disable-next-line no-console
-    console.log("result is: ", JSON.stringify(result, null, 4))
+    console.log("data: ", JSON.stringify(result, null, 4))
     return result
   } catch (error) {
     if (error instanceof Error) {
-      // eslint-disable-next-line no-console
-      console.log("error message: ", error.message)
-      return error.message
-    }
-    // eslint-disable-next-line no-console
-    console.log("unexpected error: ", error)
-    return "An unexpected error occurred"
+      return Promise.reject(error.message)
+    } // eslint-disable-next-line no-console
+    return Promise.reject(console.log("unexpected error: "))
   }
 }
 
